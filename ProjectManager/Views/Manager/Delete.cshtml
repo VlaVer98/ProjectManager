@@ -1,0 +1,17 @@
+﻿@model ProjectManager.Models.Manager
+@{
+    ViewBag.Title = "Delete manager";
+}
+
+<div>
+    <h2>Do you really want to delete: @Model.Name @Model.Patronymic @Model.Surname</h2>
+
+    <div>
+        <form asp-controller="Manager" asp-action="Delete" method="post">
+            <div class="form-group">
+                <input type="submit" class="btn btn-success" value="Yes" />
+                <a asp-action="Index" asp-controller="Manager" type="button" class="btn btn-danger">No</a>
+            </div>
+        </form>
+    </div>
+</div>
