@@ -1,0 +1,37 @@
+﻿@model ProjectManager.Models.Employee
+@{
+    ViewBag.Title = Model.Name;
+}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Details:</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <p><b>Name:</b> @Model.Name</p>
+        <p><b>Patronymic:</b> @Model.Patronymic</p>
+        <p><b>Surname:</b> @Model.Surname</p>
+        <p><b>Email:</b> @Model.Email</p>
+        <p><b>Projects:</b></p>
+        @if (Model.Projects != null)
+        {
+            <ul class="list-group list-group-flush ml-5">
+                @foreach (var item in Model.Projects)
+                {
+                    <li class="list-group-item">@item.Name</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="ml-5">No projects</p>
+        }
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <a asp-action="Edit" asp-controller="Employee" asp-route-id="@Model.Id" type="button" class="btn btn-success">Edit profile</a>
+        <a asp-action="Delete" asp-controller="Employee" asp-route-id="@Model.Id" type="button" class="btn btn-danger">Delete</a>
+    </div>
+</div>
