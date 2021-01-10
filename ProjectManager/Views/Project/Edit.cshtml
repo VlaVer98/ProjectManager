@@ -1,0 +1,57 @@
+﻿@model ProjectManager.ViewModels.ProjectCreationViewModel
+@{
+    ViewBag.Title = "Edit a project";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h1>Edit project:</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-antiforgery="true" asp-action="Edit" asp-controller="Project">
+            <div class="form-group">
+                <div class="validation" asp-validation-summary="All"></div>
+            </div>
+            <input asp-for="@Model.Project.Id" type="hidden" />
+            <div class="form-group">
+                <label asp-for="@Model.Project.Name"></label><br />
+                <input class="form-control" asp-for="@Model.Project.Name" />
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Project.CompanyCustomer">Company Customer</label><br />
+                <input class="form-control" asp-for="@Model.Project.CompanyCustomer" />
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Project.CompanyPerformer">Company Performer</label><br />
+                <input class="form-control" asp-for="@Model.Project.CompanyPerformer" />
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.SelectedManager">Manager</label><br />
+                <select class="form-control" asp-for="@Model.SelectedManager" asp-items='@new SelectList(Model.Managers, "Id", "Name", Model.SelectedManager)'></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.SelectedEmployes">Employes</label><br />
+                <select class="form-control" asp-for="@Model.SelectedEmployes" asp-items='@new MultiSelectList(Model.Employes, "Id", "Name", Model.SelectedEmployes)'></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Project.StartDate">Start Date</label><br />
+                <input class="form-control" asp-for="@Model.Project.StartDate" />
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Project.EndDate">End Date</label><br />
+                <input class="form-control" asp-for="@Model.Project.EndDate" />
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Project.Priority"></label><br />
+                <input class="form-control" asp-for="@Model.Project.Priority" />
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Change" />
+            </div>
+        </form>
+    </div>
+</div>
+

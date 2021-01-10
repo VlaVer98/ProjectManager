@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace ProjectManager.Models
 {
@@ -21,5 +22,13 @@ namespace ProjectManager.Models
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
+        public string GetFullName()
+        {
+            StringBuilder fullName = new StringBuilder();
+            fullName.AppendFormat("{0} {1} {2}", Surname, Name, Patronymic);
+
+            return fullName.ToString();
+        }
     }
 }

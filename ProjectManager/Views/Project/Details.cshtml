@@ -1,0 +1,46 @@
+﻿@model ProjectManager.Models.Project
+@{
+    ViewBag.Title = Model.Name;
+}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Details:</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <p><b>Name:</b> @Model.Name</p>
+        <p><b>Company customer:</b> @Model.CompanyCustomer</p>
+        <p><b>Company performer</b> @Model.CompanyPerformer</p>
+        <p><b>Project manager:</b></p>
+        @if (Model.ProjectManager != null )
+        {
+            <p class="ml-5">@Model.ProjectManager.GetFullName()</p>
+        }
+        else
+        {
+            <p class="ml-5">No manager</p>
+        }
+        <p><b>Project performer:</b></p>
+            @if (Model.ProjectPerformers != null && Model.ProjectPerformers.Count != 0)
+            {
+                @foreach (var item in Model.ProjectPerformers)
+                {
+                    <p class="ml-5">@item.Surname @item.Name @item.Patronymic</p>
+                }
+            }
+            else
+            {
+                <p class="ml-5">No performer</p>
+            }
+        <p><b>Start date:</b> @Model.StartDate</p>
+        <p><b>End date:</b> @Model.EndDate</p>
+        <p><b>Priority:</b> @Model.Priority</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <a asp-action="Edit" asp-controller="Project" asp-route-id="@Model.Id" type="button" class="btn btn-success">Edit project</a>
+        <a asp-action="Delete" asp-controller="Project" asp-route-id="@Model.Id" type="button" class="btn btn-danger">Delete</a>
+    </div>
+</div>
