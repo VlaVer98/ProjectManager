@@ -21,23 +21,45 @@ namespace ProjectManager.Controllers
         public async Task<IActionResult> Index(
             DateTime? startDateWith, DateTime? startDateTo,
             DateTime? endDateWith, DateTime? endDateTo,
-            int? priority
+            int? priority,
+            ProjectSortState sortOrder = ProjectSortState.NameAsc
             )
         {
             var projects = from project in _db.Projects select project;
 
+            //фильтры
             projects = Project.FilterByStartDate(projects, startDateWith, startDateTo);
             projects = Project.FilterEndDate(projects, endDateWith, endDateTo);
             projects = Project.FilterByPriority(projects, priority);
 
+            //сортировка
+            projects = sortOrder switch
+            {
+                ProjectSortState.NameDesc => projects.OrderByDescending(p=>p.Name),
+                ProjectSortState.DataStartAsc => projects.OrderBy(p => p.StartDate),
+                ProjectSortState.DataStartDesc => projects.OrderByDescending(p => p.StartDate),
+                ProjectSortState.DataEndAsc => projects.OrderBy(p => p.EndDate),
+                ProjectSortState.DataEndDesc => projects.OrderByDescending(p => p.EndDate),
+                ProjectSortState.PriorityAsc => projects.OrderBy(p => p.Priority),
+                ProjectSortState.PriorityDesc => projects.OrderByDescending(p => p.Priority),
+
+                _ => projects.OrderBy(p => p.Name),
+            };
+
             var model = new ProjectSortAndFilterFildsViewModel
             {
                 Projects = await projects.ToListAsync(),
+                //значение фильтров
                 StartDateWith = startDateWith,
                 StartDateTo = startDateTo,
                 EndDateWith = endDateWith,
                 EndDateTo = endDateTo,
-                Priority = priority
+                Priority = priority,
+                //знчение сортировок
+                NameSort = sortOrder == ProjectSortState.NameAsc ? ProjectSortState.NameDesc : ProjectSortState.NameAsc,
+                DataStartSort = sortOrder == ProjectSortState.DataStartAsc ? ProjectSortState.DataStartDesc : ProjectSortState.DataStartAsc,
+                DataEndSort = sortOrder == ProjectSortState.DataEndAsc ? ProjectSortState.DataEndDesc : ProjectSortState.DataEndAsc,
+                PrioritySort = sortOrder == ProjectSortState.PriorityAsc ? ProjectSortState.PriorityDesc : ProjectSortState.PriorityAsc
             };
 
             return View(model);

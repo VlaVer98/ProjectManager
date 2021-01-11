@@ -14,5 +14,9 @@ namespace ProjectManager.ViewModels
         public DateTime? EndDateWith { get; set; }
         public DateTime? EndDateTo { get; set; }
         public int? Priority { get; set; }
+        public ProjectSortState NameSort { get; set; }
+        public ProjectSortState DataStartSort { get; set; }
+        public ProjectSortState DataEndSort { get; set; }
+        public ProjectSortState PrioritySort { get; set; }
     }
 }
