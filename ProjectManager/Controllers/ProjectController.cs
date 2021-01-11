@@ -30,7 +30,17 @@ namespace ProjectManager.Controllers
             projects = Project.FilterEndDate(projects, endDateWith, endDateTo);
             projects = Project.FilterByPriority(projects, priority);
 
-            return View(await projects.ToListAsync());
+            var model = new ProjectSortAndFilterFildsViewModel
+            {
+                Projects = await projects.ToListAsync(),
+                StartDateWith = startDateWith,
+                StartDateTo = startDateTo,
+                EndDateWith = endDateWith,
+                EndDateTo = endDateTo,
+                Priority = priority
+            };
+
+            return View(model);
         }
 
         public async Task<IActionResult> Create()
