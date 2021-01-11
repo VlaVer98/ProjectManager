@@ -8,5 +8,6 @@ namespace ProjectManager.Models
     public class Employee : User
     {
         public List<Project> Projects { get; set; }
+        public List<Task> Tasks { get; set; }
     }
 }

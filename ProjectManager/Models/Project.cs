@@ -28,6 +28,7 @@ namespace ProjectManager.Models
         [Required]
         [Range(1, 3)]
         public int Priority { get; set; }
+        public List<Task> Tasks { get; set; }
 
         public static IQueryable<Project> FilterByStartDate(IQueryable<Project> query, DateTime? startDateWith, DateTime? startDateTo)
         {
