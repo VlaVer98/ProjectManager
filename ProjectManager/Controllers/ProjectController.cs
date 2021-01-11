@@ -18,9 +18,17 @@ namespace ProjectManager.Controllers
             _db = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            DateTime? startDateWith, DateTime? startDateTo,
+            DateTime? endDateWith, DateTime? endDateTo
+            )
         {
-            return View(await _db.Projects.ToListAsync());
+            var projects = from project in _db.Projects select project;
+
+            projects = Project.FilterByStartDate(projects, startDateWith, startDateTo);
+            projects = Project.FilterEndDate(projects, endDateWith, endDateTo);
+
+            return View(await projects.ToListAsync());
         }
 
         public async Task<IActionResult> Create()

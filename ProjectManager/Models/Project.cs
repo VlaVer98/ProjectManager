@@ -28,5 +28,29 @@ namespace ProjectManager.Models
         [Required]
         [Range(1, 3)]
         public int Priority { get; set; }
+
+        public static IQueryable<Project> FilterByStartDate(IQueryable<Project> query, DateTime? startDateWith, DateTime? startDateTo)
+        {
+            if (startDateWith != null && startDateTo != null)
+                query = from project in query where project.StartDate >= startDateWith && project.StartDate <= startDateTo select project;
+            else if (startDateWith != null)
+                query = from project in query where project.StartDate >= startDateWith select project;
+            else if (startDateTo != null)
+                query = from project in query where project.StartDate <= startDateTo select project;
+
+            return query;
+        }
+
+        public static IQueryable<Project> FilterEndDate(IQueryable<Project> query, DateTime? endDateWith, DateTime? endDateTo)
+        {
+            if (endDateWith != null && endDateTo != null)
+                query = from project in query where project.EndDate >= endDateWith && project.EndDate <= endDateTo select project;
+            else if (endDateWith != null)
+                query = from project in query where project.EndDate >= endDateWith select project;
+            else if (endDateTo != null)
+                query = from project in query where project.EndDate <= endDateTo select project;
+
+            return query;
+        }
     }
 }
