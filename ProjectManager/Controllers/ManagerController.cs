@@ -38,7 +38,7 @@ namespace ProjectManager.Controllers
         {
             if (id != null)
             {
-                Manager manager = await _db.Managers.FirstOrDefaultAsync(p => p.Id == id);
+                Manager manager = await _db.Managers.Include(p=>p.Projects).FirstOrDefaultAsync(p => p.Id == id);
                 if (manager != null)
                     return View(manager);
             }

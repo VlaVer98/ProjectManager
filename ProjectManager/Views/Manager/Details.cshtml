@@ -14,14 +14,12 @@
         <p><b>Surname:</b> @Model.Surname</p>
         <p><b>Email:</b> @Model.Email</p>
         <p><b>Projects:</b></p>
-        @if (Model.Projects != null)
+        @if (Model.Projects != null && Model.Projects.Count != 0)
         {
-            <ul class="list-group list-group-flush ml-5">
-                @foreach (var item in Model.Projects)
-                {
-                    <li class="list-group-item">@item.Name</li>
-                }
-            </ul>
+            @foreach (var item in Model.Projects)
+            {
+                <p class="ml-5">@item.Name</p>
+            }
         }
         else
         {
