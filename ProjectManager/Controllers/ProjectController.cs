@@ -20,13 +20,15 @@ namespace ProjectManager.Controllers
 
         public async Task<IActionResult> Index(
             DateTime? startDateWith, DateTime? startDateTo,
-            DateTime? endDateWith, DateTime? endDateTo
+            DateTime? endDateWith, DateTime? endDateTo,
+            int? priority
             )
         {
             var projects = from project in _db.Projects select project;
 
             projects = Project.FilterByStartDate(projects, startDateWith, startDateTo);
             projects = Project.FilterEndDate(projects, endDateWith, endDateTo);
+            projects = Project.FilterByPriority(projects, priority);
 
             return View(await projects.ToListAsync());
         }

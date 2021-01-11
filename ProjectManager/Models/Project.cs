@@ -52,5 +52,13 @@ namespace ProjectManager.Models
 
             return query;
         }
+
+        public static IQueryable<Project> FilterByPriority(IQueryable<Project> query, int? priority)
+        {
+            if (priority != null)
+                query = from project in query where project.Priority == priority select project;
+
+            return query;
+        }
     }
 }
