@@ -20,7 +20,7 @@ namespace ProjectManager.Controllers
 
         public async Task<IActionResult> Index()
         {
-            return View(await _db.Tasks.ToListAsync());
+            return View(await _db.Tasks.Include(t=>t.Employee).ToListAsync());
         }
 
         public async Task<IActionResult> Create()
