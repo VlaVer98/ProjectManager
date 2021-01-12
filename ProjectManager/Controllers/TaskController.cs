@@ -18,9 +18,29 @@ namespace ProjectManager.Controllers
             _db = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string surnameEmployee, string nameProject, 
+            StatusTask? statusTask, int? priority
+            )
         {
-            return View(await _db.Tasks.Include(t=>t.Employee).ToListAsync());
+            var tasks = _db.Tasks.Include(t => t.Employee).AsQueryable();
+
+            //фильтры
+            tasks = Models.Task.FilterByName(tasks, nameProject?.Trim());
+            tasks = Models.Task.FilterBySurnameEmployee(tasks, surnameEmployee?.Trim());
+            tasks = Models.Task.FilterByStatusTask(tasks, statusTask);
+            tasks = Models.Task.FilterByPriority(tasks, priority);
+
+            var taskSortAndFilterFildsVM = new TaskSortAndFilterFildsViewModel
+            {
+                Tasks = await tasks.ToListAsync(),
+                NameProject = nameProject?.Trim(),
+                SurnameEmployee = surnameEmployee?.Trim(),
+                StatusTask = statusTask,
+                Priority = priority
+            };
+
+            return View(taskSortAndFilterFildsVM);
         }
 
         public async Task<IActionResult> Create()
