@@ -1,0 +1,29 @@
+﻿@model ProjectManager.ViewModels.AddTaskToProjectViewModel
+@{
+    ViewBag.Title = "Change task in project";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h1>Change tasks in @Model.ProjectName projet</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-antiforgery="true" asp-action="AddTask" asp-controller="Project">
+            <div class="form-group">
+                <div class="validation" asp-validation-summary="All"></div>
+            </div>
+            <input asp-for="@Model.ProjectId" type="hidden" />
+            <div class="form-group">
+                <label asp-for="@Model.SelectedTasks">Tasks:</label><br />
+                <select class="form-control" asp-for="@Model.SelectedTasks" asp-items='@new MultiSelectList(Model.Tasks, "Id", "Name", Model.SelectedTasks)'></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Change" />
+            </div>
+        </form>
+    </div>
+</div>
+

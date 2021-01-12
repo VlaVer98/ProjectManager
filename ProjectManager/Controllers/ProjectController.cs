@@ -107,7 +107,7 @@ namespace ProjectManager.Controllers
         {
             if (id != null)
             {
-                Project project = await _db.Projects.Include(p=>p.ProjectManager).Include(p => p.ProjectPerformers).FirstOrDefaultAsync(p => p.Id == id);
+                Project project = await _db.Projects.Include(p=>p.Tasks).Include(p=>p.ProjectManager).Include(p => p.ProjectPerformers).FirstOrDefaultAsync(p => p.Id == id);
                 if (project != null)
                     return View(project);
             }
@@ -203,6 +203,56 @@ namespace ProjectManager.Controllers
                 }
             }
             return NotFound();
+        }
+        
+        public async Task<IActionResult> AddTask(int? id)
+        {
+            if(id != null)
+            {
+                Project project = await _db.Projects.Include(p => p.Tasks).FirstOrDefaultAsync(p => p.Id == id);
+                if(project != null)
+                {
+                    var addTaskToProjectVm = new AddTaskToProjectViewModel
+                    {
+                        ProjectId = project.Id,
+                        ProjectName = project.Name,
+                        Tasks = await _db.Tasks.ToListAsync(),
+                        SelectedTasks = project.Tasks.Select(t => t.Id).ToList<int>()
+                    };
+
+                    return View(addTaskToProjectVm);
+                }
+            }
+
+            return NotFound();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddTask(AddTaskToProjectViewModel addTaskToProjectVM)
+        {
+            Project project = await _db.Projects.Include(p => p.Tasks).FirstOrDefaultAsync(p => p.Id == addTaskToProjectVM.ProjectId);
+            if(project != null)
+            {
+                try
+                {
+                    project.Tasks.Clear();
+
+                    foreach (var item in addTaskToProjectVM.SelectedTasks)
+                    {
+                        project.Tasks.Add(await _db.Tasks.FindAsync(item));
+                    }
+
+                    _db.Projects.Update(project);
+                    await _db.SaveChangesAsync();
+
+                    return RedirectToAction("Details", new { id = project.Id});
+                }
+                catch (Exception)
+                {
+                    return BadRequest();
+                } 
+            }
+            return BadRequest();
         }
     }
 }
