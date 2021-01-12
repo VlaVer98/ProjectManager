@@ -1,0 +1,45 @@
+﻿@model ProjectManager.Models.Task
+@{
+    ViewBag.Title = Model.Name;
+}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Details:</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <p><b>Name:</b> @Model.Name</p>
+        <p>
+            <b>Author:</b>
+            @if (@Model.Author != null)
+            {
+                <span>@Model.Author.GetFullName()</span>
+            }
+            else
+            {
+                <span>No author</span>
+            }
+        </p>
+        <p>
+            <b>Employee:</b>
+            @if (@Model.Employee != null)
+            {
+                <span>@Model.Employee.GetFullName()</span>
+            }
+            else
+            {
+                <span>No employee</span>
+            }
+        </p>
+        <p><b>Status:</b> @Model.Status</p>
+        <p><b>Comment:</b> @Model.Comment</p>
+        <p><b>Priority:</b> @Model.Priority</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <a asp-action="Edit" asp-controller="Task" asp-route-id="@Model.Id" type="button" class="btn btn-success">Edit task</a>
+        <a asp-action="Delete" asp-controller="Task" asp-route-id="@Model.Id" type="button" class="btn btn-danger">Delete</a>
+    </div>
+</div>

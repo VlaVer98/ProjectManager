@@ -1,0 +1,46 @@
+﻿@model ProjectManager.ViewModels.TaskCreationViewModel
+@{
+    ViewBag.Title = "Create a task";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h1>Create new task:</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-antiforgery="true" asp-action="Create" asp-controller="Task">
+            <div class="form-group">
+                <div class="validation" asp-validation-summary="All"></div>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Task.Name"></label><br />
+                <input class="form-control" asp-for="@Model.Task.Name" />
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Task.EmployeeId">Employee</label><br />
+                <select class="form-control" asp-for="@Model.Task.EmployeeId" asp-items='@new SelectList(Model.Employes, "Id", "Name" )'>
+                    <option value="" selected>None</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Task.Status"></label><br />
+                <select class="form-control" asp-for="@Model.Task.Status" asp-items="@Html.GetEnumSelectList<StatusTask>()"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Task.Comment"></label><br />
+                <input class="form-control" asp-for="@Model.Task.Comment" />
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Task.Priority"></label><br />
+                <input class="form-control" min="1" max="3" asp-for="@Model.Task.Priority" />
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Create" />
+            </div>
+        </form>
+    </div>
+</div>
+

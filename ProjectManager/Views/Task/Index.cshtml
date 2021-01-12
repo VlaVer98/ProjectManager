@@ -1,0 +1,48 @@
+﻿@model IEnumerable<ProjectManager.Models.Task>
+@{
+    ViewBag.Title = "Tasks";
+}
+
+<div class="row">
+    <div class="col">
+        <a type="button" class="btn btn-primary" asp-action="Create">Create new task</a>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col-md">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <td>Name</td>
+                    <td>Author</td>
+                    <td>Status</td>
+                    <td>Priority</td>
+                    <td>Actions</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Name</td>
+                        @if (item.Employee != null)
+                        {
+                            <td>@item.Employee.Surname @item.Employee.Name @item.Employee.Patronymic</td>
+                        }
+                        else
+                        {
+                            <td>No set</td>
+                        }
+                        <td>@item.Status</td>
+                        <td>@item.Priority</td>
+                        <td>
+                            <a asp-action="Details" asp-controller="Task" asp-route-id="@item.Id" type="button" class="btn btn-info btn-sm mr-1">Details</a>
+                            <a asp-action="Edit" asp-controller="Task" asp-route-id="@item.Id" type="button" class="btn btn-success btn-sm mr-1">Edit</a>
+                            <a asp-action="Delete" asp-controller="Task" asp-route-id="@item.Id" type="button" class="btn btn-danger btn-sm">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
