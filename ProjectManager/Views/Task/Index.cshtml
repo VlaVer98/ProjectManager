@@ -1,6 +1,14 @@
 ﻿@model ProjectManager.ViewModels.TaskSortAndFilterFildsViewModel
 @{
     ViewBag.Title = "Tasks";
+
+    var param = new Dictionary<string, string> 
+    {
+        ["nameProject"] = Model.NameProject,
+        ["surnameEmployee"] = Model.SurnameEmployee,
+        ["StatusTask"] = Model.StatusTask.ToString(),
+        ["priority"] = Model.Priority.ToString(),
+    };
 }
 
 <div class="row">
@@ -44,10 +52,10 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <td>Name</td>
-                    <td>Employee</td>
-                    <td>Status</td>
-                    <td>Priority</td>
+                    <td><a asp-action="Index" asp-all-route-data="param" asp-route-taskOrder="@Model.NameSort">Name</a></td>
+                    <td><a asp-action="Index" asp-all-route-data="param" asp-route-taskOrder="@Model.SurnameEmployee">Employee</a></td>
+                    <td><a asp-action="Index" asp-all-route-data="param" asp-route-taskOrder="@Model.StatusTaskSort">Status</a></td>
+                    <td><a asp-action="Index" asp-all-route-data="param" asp-route-taskOrder="@Model.PrioritySort">Priority</a></td>
                     <td>Actions</td>
                 </tr>
             </thead>

@@ -6,6 +6,18 @@ using System.Threading.Tasks;
 
 namespace ProjectManager.Models
 {
+    public enum TaskSortState
+    {
+        NameAsc,
+        NameDesc,
+        SurnameEmployeeAsc,
+        SurnameEmployeeDesc,
+        StatusAsc,
+        StatusDesc,
+        PriorityAsc,
+        PriorityDesc,
+    }
+
     public enum StatusTask
     {
         ToDo,
@@ -62,6 +74,26 @@ namespace ProjectManager.Models
             if(priority != null)
             {
                 query = query.Where(t => t.Priority == priority);
+            }
+            return query;
+        }
+
+        public static IQueryable<Task> Sort(IQueryable<Task> query, TaskSortState? sortTask)
+        {
+            if(sortTask != null)
+            {
+                query = sortTask switch
+                {
+                    TaskSortState.NameDesc => query.OrderByDescending(t => t.Name),
+                    TaskSortState.SurnameEmployeeAsc => query.OrderBy(t => t.Employee.Surname),
+                    TaskSortState.SurnameEmployeeDesc => query.OrderByDescending(t => t.Employee.Surname),
+                    TaskSortState.StatusAsc => query.OrderBy(t => t.Status),
+                    TaskSortState.StatusDesc => query.OrderByDescending(t => t.Status),
+                    TaskSortState.PriorityAsc => query.OrderBy(t => t.Priority),
+                    TaskSortState.PriorityDesc => query.OrderByDescending(t => t.Priority),
+
+                    _ => query.OrderBy(t => t.Name),
+                };
             }
             return query;
         }

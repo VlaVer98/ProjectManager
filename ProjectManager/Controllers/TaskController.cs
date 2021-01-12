@@ -20,7 +20,8 @@ namespace ProjectManager.Controllers
 
         public async Task<IActionResult> Index(
             string surnameEmployee, string nameProject, 
-            StatusTask? statusTask, int? priority
+            StatusTask? statusTask, int? priority,
+            TaskSortState taskOrder = TaskSortState.NameAsc
             )
         {
             var tasks = _db.Tasks.Include(t => t.Employee).AsQueryable();
@@ -31,13 +32,22 @@ namespace ProjectManager.Controllers
             tasks = Models.Task.FilterByStatusTask(tasks, statusTask);
             tasks = Models.Task.FilterByPriority(tasks, priority);
 
+            //сортировка
+            tasks = Models.Task.Sort(tasks, taskOrder);
+
             var taskSortAndFilterFildsVM = new TaskSortAndFilterFildsViewModel
             {
                 Tasks = await tasks.ToListAsync(),
+                //значение фильтров
                 NameProject = nameProject?.Trim(),
                 SurnameEmployee = surnameEmployee?.Trim(),
                 StatusTask = statusTask,
-                Priority = priority
+                Priority = priority,
+                //значение сортировок
+                NameSort = taskOrder == TaskSortState.NameAsc ? TaskSortState.NameDesc : TaskSortState.NameAsc,
+                SurnameEmployeeSort = taskOrder == TaskSortState.SurnameEmployeeAsc ? TaskSortState.SurnameEmployeeDesc : TaskSortState.SurnameEmployeeAsc,
+                StatusTaskSort = taskOrder == TaskSortState.StatusAsc ? TaskSortState.StatusDesc : TaskSortState.StatusAsc,
+                PrioritySort = taskOrder == TaskSortState.PriorityAsc ? TaskSortState.PriorityDesc : TaskSortState.PriorityAsc
             };
 
             return View(taskSortAndFilterFildsVM);
