@@ -42,7 +42,7 @@ namespace ProjectManager.Controllers
             {
                 if (id != null)
                 {
-                    Employee employee = await _db.Employes.Include(p => p.Projects).FirstOrDefaultAsync(p => p.Id == id);
+                    Employee employee = await _db.Employes.Include(p => p.Projects).Include(p=>p.Tasks).FirstOrDefaultAsync(p => p.Id == id);
                     if (employee != null)
                         return View(employee);
                 }

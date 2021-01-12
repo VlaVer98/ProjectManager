@@ -25,9 +25,21 @@
         {
             <p class="ml-5">No projects</p>
         }
+        <p><b>Tasks:</b></p>
+        @if (Model.Tasks != null && Model.Tasks.Count != 0)
+        {
+            @foreach (var item in Model.Tasks)
+            {
+                <p class="ml-5"><a asp-controller="Task" asp-action="Details" asp-route-id="@item.Id">@item.Name</a></p>
+            }
+        }
+        else
+        {
+            <p class="ml-5">No projects</p>
+        }
     </div>
 </div>
-<div class="row">
+<div class="row mt-2">
     <div class="col-md-12">
         <a asp-action="Edit" asp-controller="Employee" asp-route-id="@Model.Id" type="button" class="btn btn-success">Edit profile</a>
         <a asp-action="Delete" asp-controller="Employee" asp-route-id="@Model.Id" type="button" class="btn btn-danger">Delete</a>
