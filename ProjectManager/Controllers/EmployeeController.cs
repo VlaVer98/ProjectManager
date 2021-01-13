@@ -89,10 +89,10 @@ namespace ProjectManager.Controllers
             {
                 if (id != null)
                 {
-                    Employee employee = await _db.Employes.FirstOrDefaultAsync(p => p.Id == id);
+                    Employee employee = await _db.Employes.Include(e=>e.Tasks).FirstOrDefaultAsync(p => p.Id == id);
                     if (employee != null)
                     {
-                        _db.Users.Remove(employee);
+                        _db.Employes.Remove(employee);
                         await _db.SaveChangesAsync();
                         return RedirectToAction("Index");
                     }
