@@ -30,7 +30,9 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.SelectedManager">Manager</label><br />
-                <select class="form-control" asp-for="@Model.SelectedManager" asp-items='@new SelectList(Model.Managers, "Id", "Name", Model.SelectedManager)'></select>
+                <select class="form-control" asp-for="@Model.SelectedManager" asp-items='@new SelectList(Model.Managers, "Id", "Name", Model.SelectedManager)'>
+                    <option value="">None</option>
+                </select>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.SelectedEmployes">Employes</label><br />
