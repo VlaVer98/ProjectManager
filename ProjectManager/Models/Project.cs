@@ -61,5 +61,26 @@ namespace ProjectManager.Models
 
             return query;
         }
+
+        public static IQueryable<Project> Sort(IQueryable<Project> query, ProjectSortState? sortOrder)
+        {
+            if(sortOrder != null)
+            {
+                query = sortOrder switch
+                {
+                    ProjectSortState.NameDesc => query.OrderByDescending(p => p.Name),
+                    ProjectSortState.DataStartAsc => query.OrderBy(p => p.StartDate),
+                    ProjectSortState.DataStartDesc => query.OrderByDescending(p => p.StartDate),
+                    ProjectSortState.DataEndAsc => query.OrderBy(p => p.EndDate),
+                    ProjectSortState.DataEndDesc => query.OrderByDescending(p => p.EndDate),
+                    ProjectSortState.PriorityAsc => query.OrderBy(p => p.Priority),
+                    ProjectSortState.PriorityDesc => query.OrderByDescending(p => p.Priority),
+
+                    _ => query.OrderBy(p => p.Name),
+                };
+            }
+
+            return query;
+        }
     }
 }

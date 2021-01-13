@@ -33,18 +33,7 @@ namespace ProjectManager.Controllers
             projects = Project.FilterByPriority(projects, priority);
 
             //сортировка
-            projects = sortOrder switch
-            {
-                ProjectSortState.NameDesc => projects.OrderByDescending(p=>p.Name),
-                ProjectSortState.DataStartAsc => projects.OrderBy(p => p.StartDate),
-                ProjectSortState.DataStartDesc => projects.OrderByDescending(p => p.StartDate),
-                ProjectSortState.DataEndAsc => projects.OrderBy(p => p.EndDate),
-                ProjectSortState.DataEndDesc => projects.OrderByDescending(p => p.EndDate),
-                ProjectSortState.PriorityAsc => projects.OrderBy(p => p.Priority),
-                ProjectSortState.PriorityDesc => projects.OrderByDescending(p => p.Priority),
-
-                _ => projects.OrderBy(p => p.Name),
-            };
+            projects = Project.Sort(projects, sortOrder);
 
             var model = new ProjectSortAndFilterFildsViewModel
             {
