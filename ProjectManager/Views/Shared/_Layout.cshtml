@@ -32,6 +32,15 @@
                         </li>
                     </ul>
                 </div>
+                <div class="float-lg-right">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                    <form asp-antiforgery="true" asp-controller="Account" asp-action="Logout">
+                        <label class="mr-1">@User.Identity.Name</label>
+                        <input type="submit" class="btn btn-light btn-sm" value="Logout" />
+                    </form>
+                    }
+                </div>
             </div>
         </nav>
     </header>
