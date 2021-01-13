@@ -10,6 +10,7 @@ namespace ProjectManager.Models
 {
     public class ApplicationContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
+        public DbSet<Supervisor> Supervisors { get; set; }
         public DbSet<Employee> Employes { get; set; }
         public DbSet<Manager> Managers { get; set; }
         public DbSet<Project> Projects { get; set; }
