@@ -81,14 +81,14 @@ namespace ProjectManager.Controllers
         {
             if (ModelState.IsValid)
             {
-                projectCreationVM.Project.ProjectManager = await _db.Managers.FirstAsync(m => m.Id == projectCreationVM.SelectedManager);
+                projectCreationVM.Project.ProjectManager = await _db.Managers.FirstOrDefaultAsync(m => m.Id == projectCreationVM.SelectedManager);
 
                 if(projectCreationVM.SelectedEmployes != null)
                 {
                     projectCreationVM.Project.ProjectPerformers = new List<Employee>();
                     foreach (var item in projectCreationVM.SelectedEmployes)
                     {
-                        Employee employee = await _db.Employes.FirstAsync(e => e.Id == item);
+                        Employee employee = await _db.Employes.FirstOrDefaultAsync(e => e.Id == item);
                         if (employee != null)
                             projectCreationVM.Project.ProjectPerformers.Add(employee);
                     }
@@ -182,7 +182,7 @@ namespace ProjectManager.Controllers
         {
             if (id != null)
             {
-                Project project = await _db.Projects.FirstAsync(p => p.Id == id);
+                Project project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == id);
                 if (project != null)
                     return View(project);
             }
@@ -194,7 +194,7 @@ namespace ProjectManager.Controllers
         {
             if (id != null)
             {
-                Project project = await _db.Projects.FirstAsync(p => p.Id == id);
+                Project project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == id);
                 if (project != null)
                 {
                     _db.Projects.Remove(project);
