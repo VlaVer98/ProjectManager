@@ -31,7 +31,7 @@ namespace ProjectManager
             password = "_Aa123456";
             if (await userManager.FindByNameAsync(email) == null)
             {
-                Supervisor supervisor = new Supervisor { Email = email, UserName = email, Name = "NoName", Surname = "NoSurname", Patronymic = "NoPtronymic" };
+                Supervisor supervisor = new Supervisor { Email = email, UserName = email, Name = "supervisor", Surname = "supervisor", Patronymic = "supervisor" };
                 IdentityResult result = await userManager.CreateAsync(supervisor, password);
                 if (result.Succeeded)
                 {
@@ -39,11 +39,11 @@ namespace ProjectManager
                 }
             }
 
-            email = "manager@project.com";
+            email = "manager1@project.com";
             password = "_Aa123456";
             if (await userManager.FindByNameAsync(email) == null)
             {
-                Manager manager = new Manager { Email = email, UserName = email, Name = "NoName", Surname = "NoSurname", Patronymic = "NoPtronymic" };
+                Manager manager = new Manager { Email = email, UserName = email, Name = "manager1", Surname = "manager1", Patronymic = "manager1" };
                 IdentityResult result = await userManager.CreateAsync(manager, password);
                 if (result.Succeeded)
                 {
@@ -51,11 +51,35 @@ namespace ProjectManager
                 }
             }
 
-            email = "employee@project.com";
+            email = "manager2@project.com";
             password = "_Aa123456";
             if (await userManager.FindByNameAsync(email) == null)
             {
-                Employee employee = new Employee { Email = email, UserName = email, Name = "NoName", Surname = "NoSurname", Patronymic = "NoPtronymic" };
+                Manager manager = new Manager { Email = email, UserName = email, Name = "manager2", Surname = "manager2", Patronymic = "manager2" };
+                IdentityResult result = await userManager.CreateAsync(manager, password);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(manager, "manager");
+                }
+            }
+
+            email = "employee1@project.com";
+            password = "_Aa123456";
+            if (await userManager.FindByNameAsync(email) == null)
+            {
+                Employee employee = new Employee { Email = email, UserName = email, Name = "employee1", Surname = "employee1", Patronymic = "employee1" };
+                IdentityResult result = await userManager.CreateAsync(employee, password);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(employee, "employee");
+                }
+            }
+
+            email = "employee2@project.com";
+            password = "_Aa123456";
+            if (await userManager.FindByNameAsync(email) == null)
+            {
+                Employee employee = new Employee { Email = email, UserName = email, Name = "employee2", Surname = "employee2", Patronymic = "employee2" };
                 IdentityResult result = await userManager.CreateAsync(employee, password);
                 if (result.Succeeded)
                 {
