@@ -2,7 +2,7 @@
 @{
     ViewBag.Title = "Tasks";
 
-    var param = new Dictionary<string, string> 
+    var param = new Dictionary<string, string>
     {
         ["nameProject"] = Model.NameProject,
         ["surnameEmployee"] = Model.SurnameEmployee,
@@ -10,12 +10,14 @@
         ["priority"] = Model.Priority.ToString(),
     };
 }
-
-<div class="row">
-    <div class="col">
-        <a type="button" class="btn btn-primary" asp-action="Create">Create new task</a>
+@if (User.IsInRole("supervisor") || User.IsInRole("manager"))
+{
+    <div class="row">
+        <div class="col">
+            <a type="button" class="btn btn-primary" asp-action="Create">Create new task</a>
+        </div>
     </div>
-</div>
+}
 <div class="row">
     <div class="col-md mt-2">
         <form method="get">
@@ -76,8 +78,16 @@
                         <td>@item.Priority</td>
                         <td>
                             <a asp-action="Details" asp-controller="Task" asp-route-id="@item.Id" type="button" class="btn btn-info btn-sm mr-1">Details</a>
-                            <a asp-action="Edit" asp-controller="Task" asp-route-id="@item.Id" type="button" class="btn btn-success btn-sm mr-1">Edit</a>
-                            <a asp-action="Delete" asp-controller="Task" asp-route-id="@item.Id" type="button" class="btn btn-danger btn-sm">Delete</a>
+                            @if (User.IsInRole("supervisor"))
+                            {
+                                <a asp-action="Edit" asp-controller="Task" asp-route-id="@item.Id" type="button" class="btn btn-success btn-sm mr-1">Edit</a>
+                                <a asp-action="Delete" asp-controller="Task" asp-route-id="@item.Id" type="button" class="btn btn-danger btn-sm">Delete</a>
+                            }
+                            else if (User.IsInRole("manager") && item.Author.Id.ToString() == (string)ViewData["userId"])
+                            {
+                                <a asp-action="Edit" asp-controller="Task" asp-route-id="@item.Id" type="button" class="btn btn-success btn-sm mr-1">Edit</a>
+                                <a asp-action="Delete" asp-controller="Task" asp-route-id="@item.Id" type="button" class="btn btn-danger btn-sm">Delete</a>
+                            }
                         </td>
                     </tr>
                 }

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Models;
 using ProjectManager.ViewModels;
@@ -9,22 +11,26 @@ using System.Threading.Tasks;
 
 namespace ProjectManager.Controllers
 {
+    [Authorize]
     public class TaskController : Controller
     {
-        ApplicationContext _db;
-        
-        public TaskController(ApplicationContext context)
+        readonly ApplicationContext _db;
+        readonly UserManager<User> _userManager;
+
+        public TaskController(ApplicationContext context, UserManager<User> userManager)
         {
             _db = context;
+            _userManager = userManager;
         }
 
+        [Authorize(Roles = "supervisor, manager, employee")]
         public async Task<IActionResult> Index(
             string surnameEmployee, string nameProject, 
             StatusTask? statusTask, int? priority,
             TaskSortState taskOrder = TaskSortState.NameAsc
             )
         {
-            var tasks = _db.Tasks.Include(t => t.Employee).AsQueryable();
+            var tasks = _db.Tasks.Include(t => t.Employee).Include(t=>t.Author).AsQueryable();
 
             //фильтры
             tasks = Models.Task.FilterByName(tasks, nameProject?.Trim());
@@ -50,9 +56,12 @@ namespace ProjectManager.Controllers
                 PrioritySort = taskOrder == TaskSortState.PriorityAsc ? TaskSortState.PriorityDesc : TaskSortState.PriorityAsc
             };
 
+            ViewData["userId"] = _userManager.GetUserId(User);
+
             return View(taskSortAndFilterFildsVM);
         }
 
+        [Authorize(Roles = "supervisor, manager")]
         public async Task<IActionResult> Create()
         {
             var taskCreationVM = new TaskCreationViewModel
@@ -63,11 +72,15 @@ namespace ProjectManager.Controllers
             return View(taskCreationVM);
         }
 
+        [Authorize(Roles = "supervisor, manager")]
         [HttpPost]
         public async Task<IActionResult> Create(TaskCreationViewModel taskCreationVM)
         {
             if (ModelState.IsValid)
             {
+                User authUser = await _userManager.GetUserAsync(User);
+                taskCreationVM.Task.Author = authUser;
+
                 _db.Tasks.Add(taskCreationVM.Task);
                 await _db.SaveChangesAsync();
 
@@ -78,9 +91,12 @@ namespace ProjectManager.Controllers
             return View(taskCreationVM);
         }
 
+        [Authorize(Roles = "supervisor, manager, employee")]
         public async Task<IActionResult> Details(int? id)
         {
-            if(id != null)
+            ViewData["userId"] = _userManager.GetUserId(User);
+
+            if (id != null)
             {
                 var task = await _db.Tasks.Include(t=>t.Author).Include(t=>t.Employee).FirstOrDefaultAsync(t=>t.Id==id);
                 if(task != null)
@@ -90,11 +106,19 @@ namespace ProjectManager.Controllers
             return NotFound();
         }
 
+        [Authorize(Roles = "supervisor, manager")]
         public async Task<IActionResult> Edit(int? id)
         {
             if(id != null)
             {
-                var task = await _db.Tasks.Include(t => t.Author).Include(t => t.Employee).FirstOrDefaultAsync(t => t.Id == id);
+                Models.Task task = null;
+
+                if (User.IsInRole("supervisor"))
+                    task = await _db.Tasks.Include(t => t.Author).Include(t => t.Employee).
+                        FirstOrDefaultAsync(t => t.Id == id);
+                else
+                    task = await _db.Tasks.Include(t => t.Author).Include(t => t.Employee).
+                        FirstOrDefaultAsync(t => t.Id == id && t.Author.Id.ToString() == _userManager.GetUserId(User));
 
                 if(task != null)
                 {
@@ -106,14 +130,27 @@ namespace ProjectManager.Controllers
 
                     return View(taskCreatinVM);
                 }
+
+                return Unauthorized();
             }
             return NotFound();
         }
+
+        [Authorize(Roles = "supervisor, manager")]
         [HttpPost]
         public async Task<IActionResult> Edit(TaskCreationViewModel taskCreationVM)
         {
             if (ModelState.IsValid)
             {
+                Models.Task taskIsUser = await _db.Tasks.Include(t => t.Author).
+                    Where(t=>t.Id == taskCreationVM.Task.Id)
+                    .AsNoTracking().FirstOrDefaultAsync();
+
+                if (taskIsUser == null)
+                    return BadRequest();
+                else if (!User.IsInRole("supervisor") && taskIsUser.Author.Id.ToString() != _userManager.GetUserId(User))
+                    return Unauthorized();
+
                 _db.Update(taskCreationVM.Task);
                 await _db.SaveChangesAsync();
 
@@ -124,31 +161,47 @@ namespace ProjectManager.Controllers
             return View(taskCreationVM);
         }
 
+        [Authorize(Roles = "supervisor, manager")]
         [HttpGet]
         [ActionName("Delete")]
         public async Task<IActionResult> ConfirmDelete(int? id)
         {
             if (id != null)
             {
-                var task = await _db.Tasks.FirstOrDefaultAsync(p => p.Id == id);
+                Models.Task task = null;
+
+                if (User.IsInRole("supervisor"))
+                    task = await _db.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+                else
+                    task = await _db.Tasks.FirstOrDefaultAsync(t => t.Id == id && t.Author.Id.ToString() == _userManager.GetUserId(User));
+
                 if (task != null)
                     return View(task);
             }
             return NotFound();
         }
 
+        [Authorize(Roles = "supervisor, manager")]
         [HttpPost]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id != null)
             {
-                var task = await _db.Tasks.FirstOrDefaultAsync(p => p.Id == id);
-                if (task != null)
-                {
-                    _db.Tasks.Remove(task);
-                    await _db.SaveChangesAsync();
-                    return RedirectToAction("Index");
-                }
+                Models.Task task = null;
+
+                if (User.IsInRole("supervisor"))
+                    task = await _db.Tasks.Include(t=>t.Author).FirstOrDefaultAsync(t => t.Id == id);
+                else
+                    task = await _db.Tasks.Include(t => t.Author).FirstOrDefaultAsync(t => t.Id == id && t.Author.Id.ToString() == _userManager.GetUserId(User));
+
+                if (task == null)
+                    return BadRequest();
+                else if (!User.IsInRole("supervisor") && task.Author.Id.ToString() != _userManager.GetUserId(User))
+                    return Unauthorized();
+
+                _db.Tasks.Remove(task);
+                await _db.SaveChangesAsync();
+                return RedirectToAction("Index");
             }
             return NotFound();
         }
