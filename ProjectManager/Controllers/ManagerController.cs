@@ -1,16 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Models;
+using ProjectManager.ViewModels;
 using System.Threading.Tasks;
 
 namespace ProjectManager.Controllers
 {
+    [Authorize(Roles = "supervisor")]
     public class ManagerController : Controller
     {
-        private ApplicationContext _db;
-        public ManagerController(ApplicationContext context)
+        private readonly ApplicationContext _db;
+        private readonly UserManager<User> _userManager;
+
+        public ManagerController(ApplicationContext context, UserManager<User> userManager)
         {
             _db = context;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Index()
@@ -23,16 +30,35 @@ namespace ProjectManager.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Manager manager)
+        public async Task<IActionResult> Create(CreateUserViewModel createUserVM)
         {
             if (ModelState.IsValid)
             {
-                _db.Managers.Add(manager);
-                await _db.SaveChangesAsync();
-                return RedirectToAction("Index");
+                Manager manager = new Manager { 
+                    Email = createUserVM.Email, 
+                    UserName = createUserVM.Email, 
+                    Name = createUserVM.Name, 
+                    Surname = createUserVM.Surname, 
+                    Patronymic = createUserVM.Patronymic 
+                };
+
+                var result = await _userManager.CreateAsync(manager, createUserVM.Password);
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(manager, "manager");
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
+                return View(createUserVM);
             }
 
-            return View(manager);
+            return View(createUserVM);
         }
         public async Task<IActionResult> Details(int? id)
         {
@@ -44,27 +70,49 @@ namespace ProjectManager.Controllers
             }
             return NotFound();
         }
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(string id)
         {
-            if (id != null)
+            User user = await _userManager.FindByIdAsync(id);
+            if (user == null)
             {
-                Manager manager = await _db.Managers.FirstOrDefaultAsync(p => p.Id == id);
-                if (manager != null)
-                    return View(manager);
+                return NotFound();
             }
-            return NotFound();
+            EditUserViewModel model = new EditUserViewModel
+            {
+                Id = user.Id.ToString(),
+                Name = user.Name,
+                Surname = user.Surname,
+                Patronymic = user.Patronymic,
+            };
+            return View(model);
         }
         [HttpPost]
-        public async Task<IActionResult> Edit(Manager manager)
+        public async Task<IActionResult> Edit(EditUserViewModel editUserVM)
         {
             if (ModelState.IsValid)
             {
-                _db.Managers.Update(manager);
-                await _db.SaveChangesAsync();
-                return RedirectToAction("Details", new { id = manager.Id });
-            }
+                User user = await _userManager.FindByIdAsync(editUserVM.Id);
+                if (user != null)
+                {
+                    user.Name = editUserVM.Name;
+                    user.Surname = editUserVM.Surname;
+                    user.Patronymic = editUserVM.Patronymic;
 
-            return View(manager);
+                    var result = await _userManager.UpdateAsync(user);
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+                    }
+                }
+            }
+            return View(editUserVM);
         }
 
         [HttpGet]

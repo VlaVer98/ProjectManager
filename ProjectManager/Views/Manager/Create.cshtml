@@ -1,6 +1,6 @@
-﻿@model ProjectManager.Models.Manager
+﻿@model ProjectManager.ViewModels.CreateUserViewModel
 @{
-    ViewBag.Title = "Create amanager";
+    ViewBag.Title = "Create a manager";
 }
 
 <div class="row">
@@ -30,6 +30,10 @@
             <div class="form-group">
                 <label asp-for="Email"></label><br />
                 <input class="form-control" asp-for="Email" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Password"></label><br />
+                <input class="form-control" asp-for="Password" />
             </div>
             <div class="form-group">
                 <input type="submit" class="btn btn-primary" value="Create" />
