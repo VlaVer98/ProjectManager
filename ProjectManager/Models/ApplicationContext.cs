@@ -18,8 +18,7 @@ namespace ProjectManager.Models
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)
         {
-            //Database.De
-            //Database.EnsureCreated();
+            Database.EnsureCreated();
         }
     }
 }
