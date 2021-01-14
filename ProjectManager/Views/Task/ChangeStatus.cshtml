@@ -1,0 +1,29 @@
+﻿@model ProjectManager.ViewModels.ChangeStatusTaskViewModel
+@{
+    ViewBag.Title = "Сhange task status";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h1>Сhange task status:</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-antiforgery="true" asp-action="ChangeStatus" asp-controller="Task">
+            <div class="form-group">
+                <div class="validation" asp-validation-summary="All"></div>
+            </div>
+            @Html.HiddenFor(m => m.IdTask)
+
+            <div class="form-group">
+                <select class="form-control" asp-for="@Model.CurrentStatusTask" asp-items="@Html.GetEnumSelectList<StatusTask>()"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Change" />
+            </div>
+        </form>
+    </div>
+</div>
+

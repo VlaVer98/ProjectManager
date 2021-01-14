@@ -205,5 +205,55 @@ namespace ProjectManager.Controllers
             }
             return NotFound();
         }
+
+        [Authorize(Roles = "supervisor, manager, employee")]
+        public async Task<IActionResult> ChangeStatus(int? id)
+        {
+            var task = await _db.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+
+            if(task != null)
+            {
+                var changeStatusTaskVM = new ChangeStatusTaskViewModel
+                {
+                    IdTask = task.Id,
+                    CurrentStatusTask = task.Status
+                };
+
+                return View(changeStatusTaskVM);
+            }
+
+            return NotFound();
+        }
+
+        [Authorize(Roles = "supervisor, manager, employee")]
+        [HttpPost]
+        public async Task<IActionResult> ChangeStatus(ChangeStatusTaskViewModel changeStatusTaskVM)
+        {
+            if (ModelState.IsValid)
+            {
+                Models.Task taskIsUser = await _db.Tasks.Include(t => t.Author).Include(t=>t.Employee)
+                    .Where(t => t.Id == changeStatusTaskVM.IdTask)
+                    .FirstOrDefaultAsync();
+
+                if (taskIsUser == null)
+                    return BadRequest();
+
+                if(User.IsInRole("supervisor") ||
+                    User.IsInRole("manager") ||
+                    User.IsInRole("employee") && taskIsUser.Employee.Id.ToString() == _userManager.GetUserId(User))
+                {
+                    taskIsUser.Status = changeStatusTaskVM.CurrentStatusTask;
+
+                    _db.Update(taskIsUser);
+                    await _db.SaveChangesAsync();
+
+                    return RedirectToAction("Index");
+                }
+
+                return Unauthorized();
+            }
+
+            return View(changeStatusTaskVM);
+        }
     }
 }
