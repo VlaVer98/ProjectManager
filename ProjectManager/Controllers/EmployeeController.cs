@@ -10,94 +10,93 @@ namespace ProjectManager.Controllers
 {
     public class EmployeeController : Controller
     {
+        private ApplicationContext _db;
+        public EmployeeController(ApplicationContext context)
+        {
+            _db = context;
+        }
 
-            private ApplicationContext _db;
-            public EmployeeController(ApplicationContext context)
+        public async Task<IActionResult> Index()
+        {
+            return View(await _db.Employes.ToListAsync());
+        }
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(Employee employee)
+        {
+            if (ModelState.IsValid)
             {
-                _db = context;
+                _db.Employes.Add(employee);
+                await _db.SaveChangesAsync();
+                return RedirectToAction("Index");
             }
 
-            public async Task<IActionResult> Index()
+            return View(employee);
+        }
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id != null)
             {
-                return View(await _db.Employes.ToListAsync());
+                Employee employee = await _db.Employes.Include(p => p.Projects).Include(p=>p.Tasks).FirstOrDefaultAsync(p => p.Id == id);
+                if (employee != null)
+                    return View(employee);
             }
-            public IActionResult Create()
+            return NotFound();
+        }
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id != null)
             {
-                return View();
+                Employee employee = await _db.Employes.FirstOrDefaultAsync(p => p.Id == id);
+                if (employee != null)
+                    return View(employee);
+            }
+            return NotFound();
+        }
+        [HttpPost]
+        public async Task<IActionResult> Edit(Employee employee)
+        {
+            if (ModelState.IsValid)
+            {
+                _db.Employes.Update(employee);
+                await _db.SaveChangesAsync();
+                return RedirectToAction("Details", new { id = employee.Id });
             }
 
-            [HttpPost]
-            public async Task<IActionResult> Create(Employee employee)
+            return View(employee);
+        }
+
+        [HttpGet]
+        [ActionName("Delete")]
+        public async Task<IActionResult> ConfirmDelete(int? id)
+        {
+            if (id != null)
             {
-                if (ModelState.IsValid)
+                Employee employee = await _db.Employes.FirstOrDefaultAsync(p => p.Id == id);
+                if (employee != null)
+                    return View(employee);
+            }
+            return NotFound();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id != null)
+            {
+                Employee employee = await _db.Employes.Include(e=>e.Tasks).FirstOrDefaultAsync(p => p.Id == id);
+                if (employee != null)
                 {
-                    _db.Employes.Add(employee);
+                    _db.Employes.Remove(employee);
                     await _db.SaveChangesAsync();
                     return RedirectToAction("Index");
                 }
-
-                return View(employee);
             }
-            public async Task<IActionResult> Details(int? id)
-            {
-                if (id != null)
-                {
-                    Employee employee = await _db.Employes.Include(p => p.Projects).Include(p=>p.Tasks).FirstOrDefaultAsync(p => p.Id == id);
-                    if (employee != null)
-                        return View(employee);
-                }
-                return NotFound();
-            }
-            public async Task<IActionResult> Edit(int? id)
-            {
-                if (id != null)
-                {
-                    Employee employee = await _db.Employes.FirstOrDefaultAsync(p => p.Id == id);
-                    if (employee != null)
-                        return View(employee);
-                }
-                return NotFound();
-            }
-            [HttpPost]
-            public async Task<IActionResult> Edit(Employee employee)
-            {
-                if (ModelState.IsValid)
-                {
-                    _db.Employes.Update(employee);
-                    await _db.SaveChangesAsync();
-                    return RedirectToAction("Details", new { id = employee.Id });
-                }
-
-                return View(employee);
-            }
-
-            [HttpGet]
-            [ActionName("Delete")]
-            public async Task<IActionResult> ConfirmDelete(int? id)
-            {
-                if (id != null)
-                {
-                    Employee employee = await _db.Employes.FirstOrDefaultAsync(p => p.Id == id);
-                    if (employee != null)
-                        return View(employee);
-                }
-                return NotFound();
-            }
-
-            [HttpPost]
-            public async Task<IActionResult> Delete(int? id)
-            {
-                if (id != null)
-                {
-                    Employee employee = await _db.Employes.Include(e=>e.Tasks).FirstOrDefaultAsync(p => p.Id == id);
-                    if (employee != null)
-                    {
-                        _db.Employes.Remove(employee);
-                        await _db.SaveChangesAsync();
-                        return RedirectToAction("Index");
-                    }
-                }
-                return NotFound();
-            }
+            return NotFound();
+        }
         }
 }
