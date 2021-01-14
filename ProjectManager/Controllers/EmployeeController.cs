@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Models;
+using ProjectManager.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +11,16 @@ using System.Threading.Tasks;
 
 namespace ProjectManager.Controllers
 {
+    [Authorize(Roles = "supervisor")]
     public class EmployeeController : Controller
     {
-        private ApplicationContext _db;
-        public EmployeeController(ApplicationContext context)
+        private readonly ApplicationContext _db;
+        private readonly UserManager<User> _userManager;
+
+        public EmployeeController(ApplicationContext context, UserManager<User> userManager)
         {
             _db = context;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Index()
@@ -26,17 +33,38 @@ namespace ProjectManager.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Employee employee)
+        public async Task<IActionResult> Create(CreateUserViewModel createUserVM)
         {
             if (ModelState.IsValid)
             {
-                _db.Employes.Add(employee);
-                await _db.SaveChangesAsync();
-                return RedirectToAction("Index");
+                Employee employee = new Employee
+                {
+                    Email = createUserVM.Email,
+                    UserName = createUserVM.Email,
+                    Name = createUserVM.Name,
+                    Surname = createUserVM.Surname,
+                    Patronymic = createUserVM.Patronymic
+                };
+
+                var result = await _userManager.CreateAsync(employee, createUserVM.Password);
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(employee, "manager");
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
+                return View(createUserVM);
             }
 
-            return View(employee);
+            return View(createUserVM);
         }
+
         public async Task<IActionResult> Details(int? id)
         {
             if (id != null)
@@ -47,27 +75,51 @@ namespace ProjectManager.Controllers
             }
             return NotFound();
         }
-        public async Task<IActionResult> Edit(int? id)
+
+        public async Task<IActionResult> Edit(string id)
         {
-            if (id != null)
+            User user = await _userManager.FindByIdAsync(id);
+            if (user == null)
             {
-                Employee employee = await _db.Employes.FirstOrDefaultAsync(p => p.Id == id);
-                if (employee != null)
-                    return View(employee);
+                return NotFound();
             }
-            return NotFound();
+            EditUserViewModel model = new EditUserViewModel
+            {
+                Id = user.Id.ToString(),
+                Name = user.Name,
+                Surname = user.Surname,
+                Patronymic = user.Patronymic,
+            };
+            return View(model);
         }
+
         [HttpPost]
-        public async Task<IActionResult> Edit(Employee employee)
+        public async Task<IActionResult> Edit(EditUserViewModel editUserVM)
         {
             if (ModelState.IsValid)
             {
-                _db.Employes.Update(employee);
-                await _db.SaveChangesAsync();
-                return RedirectToAction("Details", new { id = employee.Id });
-            }
+                User user = await _userManager.FindByIdAsync(editUserVM.Id);
+                if (user != null)
+                {
+                    user.Name = editUserVM.Name;
+                    user.Surname = editUserVM.Surname;
+                    user.Patronymic = editUserVM.Patronymic;
 
-            return View(employee);
+                    var result = await _userManager.UpdateAsync(user);
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+                    }
+                }
+            }
+            return View(editUserVM);
         }
 
         [HttpGet]
