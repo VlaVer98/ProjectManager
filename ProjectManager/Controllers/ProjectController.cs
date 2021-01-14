@@ -307,5 +307,77 @@ namespace ProjectManager.Controllers
             }
             return BadRequest();
         }
+
+        [Authorize(Roles = "supervisor, manager")]
+        public async Task<IActionResult> ChangeEmployee(int? id)
+        {
+            if (id != null)
+            {
+                IQueryable<Project> query = null;
+
+                if (User.IsInRole("supervisor"))
+                    query = _db.Projects.Include(p => p.ProjectPerformers).Where(p => p.Id == id);
+                else if (User.IsInRole("manager"))
+                    query = _db.Projects.
+                        Include(p => p.ProjectPerformers).
+                        Where(p => p.Id == id && p.ProjectManager.Id.ToString() == _userManager.GetUserId(User));
+
+                Project project = await query?.FirstOrDefaultAsync();
+
+                if (project != null)
+                {
+                    var changeEmployeeInProjectVm = new ChangeEmploeeInProjectViewModel
+                    {
+                        ProjectId = project.Id,
+                        ProjectName = project.Name,
+                        Employes = await _db.Employes.ToListAsync(),
+                        SelectedEmployee = project.ProjectPerformers.Select(t => t.Id).ToList<int>()
+                    };
+
+                    return View(changeEmployeeInProjectVm);
+                }
+            }
+
+            return NotFound();
+        }
+
+        [Authorize(Roles = "supervisor, manager")]
+        [HttpPost]
+        public async Task<IActionResult> ChangeEmployee(ChangeEmploeeInProjectViewModel changeEmploeeInProjectVM)
+        {
+            IQueryable<Project> query = null;
+
+            if (User.IsInRole("supervisor"))
+                query = _db.Projects.Include(p => p.ProjectPerformers).Where(p => p.Id == changeEmploeeInProjectVM.ProjectId);
+            else if (User.IsInRole("manager"))
+                query = _db.Projects.
+                    Include(p => p.ProjectPerformers).
+                    Where(p => p.Id == changeEmploeeInProjectVM.ProjectId && p.ProjectManager.Id.ToString() == _userManager.GetUserId(User));
+
+            Project project = await query?.FirstOrDefaultAsync();
+
+            if (project != null)
+            {
+                try
+                {
+                    project.ProjectPerformers.Clear();
+
+                    foreach (var item in changeEmploeeInProjectVM.SelectedEmployee)
+                    {
+                        project.ProjectPerformers.Add(await _db.Employes.FindAsync(item));
+                    }
+
+                    _db.Projects.Update(project);
+                    await _db.SaveChangesAsync();
+
+                    return RedirectToAction("Details", new { id = project.Id });
+                }
+                catch (Exception)
+                {
+                    return BadRequest();
+                }
+            }
+            return BadRequest();
+        }
     }
 }

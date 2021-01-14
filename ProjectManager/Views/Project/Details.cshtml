@@ -59,6 +59,7 @@
         @if (User.IsInRole("supervisor") || User.IsInRole("manager"))
         {
             <a asp-action="AddTask" asp-controller="Project" asp-route-id="@Model.Id" type="button" class="btn btn-info">Change tasks</a>
+            <a asp-action="ChangeEmployee" asp-controller="Project" asp-route-id="@Model.Id" type="button" class="btn btn-info">Change employee</a>
         }
         @if (User.IsInRole("supervisor"))
         {
