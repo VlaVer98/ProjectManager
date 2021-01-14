@@ -24,12 +24,15 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Task" asp-action="Index">Tasks</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Manager" asp-action="Index">Managers</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Employee" asp-action="Index">Employee</a>
-                        </li>
+                        @if (User.IsInRole("supervisor"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Manager" asp-action="Index">Managers</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Employee" asp-action="Index">Employee</a>
+                            </li>
+                        }
                     </ul>
                 </div>
                 <div class="float-lg-right">
