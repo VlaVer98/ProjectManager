@@ -52,8 +52,17 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <a asp-action="Edit" asp-controller="Project" asp-route-id="@Model.Id" type="button" class="btn btn-success">Edit project</a>
-        <a asp-action="AddTask" asp-controller="Project" asp-route-id="@Model.Id" type="button" class="btn btn-info">Change tasks</a>
-        <a asp-action="Delete" asp-controller="Project" asp-route-id="@Model.Id" type="button" class="btn btn-danger">Delete</a>
+        @if (User.IsInRole("supervisor"))
+        {
+            <a asp-action="Edit" asp-controller="Project" asp-route-id="@Model.Id" type="button" class="btn btn-success">Edit project</a>
+        }
+        @if (User.IsInRole("supervisor") || User.IsInRole("manager"))
+        {
+            <a asp-action="AddTask" asp-controller="Project" asp-route-id="@Model.Id" type="button" class="btn btn-info">Change tasks</a>
+        }
+        @if (User.IsInRole("supervisor"))
+        {
+            <a asp-action="Delete" asp-controller="Project" asp-route-id="@Model.Id" type="button" class="btn btn-danger">Delete</a>
+        }
     </div>
 </div>

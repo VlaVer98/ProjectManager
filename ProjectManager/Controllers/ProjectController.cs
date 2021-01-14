@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Models;
 using ProjectManager.ViewModels;
@@ -9,15 +11,21 @@ using System.Threading.Tasks;
 
 namespace ProjectManager.Controllers
 {
+    [Authorize]
     public class ProjectController : Controller
     {
-        ApplicationContext _db;
+        readonly ApplicationContext _db;
+        readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public ProjectController(ApplicationContext context)
+        public ProjectController(ApplicationContext context, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _db = context;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
+        [Authorize(Roles = "supervisor, manager, employee")]
         public async Task<IActionResult> Index(
             DateTime? startDateWith, DateTime? startDateTo,
             DateTime? endDateWith, DateTime? endDateTo,
@@ -25,7 +33,19 @@ namespace ProjectManager.Controllers
             ProjectSortState sortOrder = ProjectSortState.NameAsc
             )
         {
-            var projects = from project in _db.Projects select project;
+            IQueryable<Project> projects;
+
+            if (User.IsInRole("supervisor"))
+                projects = _db.Projects.AsQueryable();
+            else if (User.IsInRole("manager"))
+                projects = _db.Projects.Where(p => p.ProjectManager.Id.ToString() == _userManager.GetUserId(User));
+            else if (User.IsInRole("employee"))
+                projects = _db.Projects.SelectMany(
+                    p => p.ProjectPerformers,
+                    (p, e) => new { Project = p, Employee = e }
+                    ).Where(e => e.Employee.Id.ToString() == _userManager.GetUserId(User)).Select(p => p.Project);
+            else
+                return Unauthorized();
 
             //фильтры
             projects = Project.FilterByStartDate(projects, startDateWith, startDateTo);
@@ -54,6 +74,7 @@ namespace ProjectManager.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "supervisor")]
         public async Task<IActionResult> Create()
         {
             var projectCreationVM = new ProjectCreationViewModel
@@ -65,6 +86,7 @@ namespace ProjectManager.Controllers
             return View(projectCreationVM);
         }
 
+        [Authorize(Roles = "supervisor")]
         [HttpPost]
         public async Task<IActionResult> Create(ProjectCreationViewModel projectCreationVM)
         {
@@ -92,16 +114,42 @@ namespace ProjectManager.Controllers
             projectCreationVM.Employes = await _db.Employes.ToListAsync<Employee>();
             return View(projectCreationVM);
         }
+
+        [Authorize(Roles = "supervisor, manager, employee")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id != null)
             {
-                Project project = await _db.Projects.Include(p=>p.Tasks).Include(p=>p.ProjectManager).Include(p => p.ProjectPerformers).FirstOrDefaultAsync(p => p.Id == id);
-                if (project != null)
+                IQueryable<Project> query = null;
+
+                if (User.IsInRole("supervisor"))
+                    query = _db.Projects.Include(p => p.Tasks).Include(p => p.ProjectManager).Include(p => p.ProjectPerformers).Where(p => p.Id == id);
+                else if (User.IsInRole("manager"))
+                    query = _db.Projects.
+                        Include(p => p.Tasks).
+                        Include(p => p.ProjectManager).
+                        Include(p => p.ProjectPerformers).
+                        Where(p => p.Id == id && p.ProjectManager.Id.ToString() == _userManager.GetUserId(User));
+                else if (User.IsInRole("employee"))
+                    query = _db.Projects.
+                        Include(p => p.Tasks).
+                        Include(p => p.ProjectManager).
+                        Include(p => p.ProjectPerformers).
+                        SelectMany(
+                            p => p.ProjectPerformers,
+                            (p, e) => new { Project = p, Employee = e }).
+                        Where(p => p.Project.Id == id).
+                        Where(e => e.Employee.Id.ToString() == _userManager.GetUserId(User)).
+                        Select(p => p.Project);
+
+                Project project = await query?.FirstOrDefaultAsync();
+                if (project  != null)
                     return View(project);
             }
             return NotFound();
         }
+
+        [Authorize(Roles = "supervisor")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id != null)
@@ -121,6 +169,8 @@ namespace ProjectManager.Controllers
             }
             return NotFound();
         }
+
+        [Authorize(Roles = "supervisor")]
         [HttpPost]
         public async Task<IActionResult> Edit(ProjectCreationViewModel projectCreationVM)
         {
@@ -165,6 +215,8 @@ namespace ProjectManager.Controllers
             projectCreationVM.Employes = await _db.Employes.ToListAsync<Employee>();
             return View(projectCreationVM);
         }
+
+        [Authorize(Roles = "supervisor")]
         [HttpGet]
         [ActionName("Delete")]
         public async Task<IActionResult> ConfirmDelete(int? id)
@@ -178,6 +230,7 @@ namespace ProjectManager.Controllers
             return NotFound();
         }
 
+        [Authorize(Roles = "supervisor")]
         [HttpPost]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -193,13 +246,23 @@ namespace ProjectManager.Controllers
             }
             return NotFound();
         }
-        
+
+        [Authorize(Roles = "supervisor, manager")]
         public async Task<IActionResult> AddTask(int? id)
         {
             if(id != null)
             {
-                Project project = await _db.Projects.Include(p => p.Tasks).FirstOrDefaultAsync(p => p.Id == id);
-                if(project != null)
+                IQueryable<Project> query = null;
+
+                if (User.IsInRole("supervisor"))
+                    query = _db.Projects.Include(p => p.Tasks).Where(p => p.Id == id);
+                else if (User.IsInRole("manager"))
+                    query = _db.Projects.
+                        Include(p => p.Tasks).
+                        Where(p => p.Id == id && p.ProjectManager.Id.ToString() == _userManager.GetUserId(User));
+
+                Project project = await query?.FirstOrDefaultAsync();
+                if (project != null)
                 {
                     var addTaskToProjectVm = new AddTaskToProjectViewModel
                     {
@@ -212,10 +275,11 @@ namespace ProjectManager.Controllers
                     return View(addTaskToProjectVm);
                 }
             }
-
+           
             return NotFound();
         }
 
+        [Authorize(Roles = "supervisor, manager")]
         [HttpPost]
         public async Task<IActionResult> AddTask(AddTaskToProjectViewModel addTaskToProjectVM)
         {
